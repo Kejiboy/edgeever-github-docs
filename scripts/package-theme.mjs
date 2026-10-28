@@ -10,13 +10,15 @@ import { dirname, join } from "node:path";
  * EdgeEver 按文件名取 Release 资产，所以不要改 manifest.json 这个名字。
  */
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const source = readFileSync(join(root, "themes/github-docs/manifest.json"), "utf8");
-const manifest = JSON.parse(source);
+
+// 以仓库根副本为准，保证 Release 资产与“安装仓库地址”时拿到的清单一致。
+const manifest = JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"));
+const serialized = `${JSON.stringify(manifest, null, 2)}\n`;
 
 mkdirSync(join(root, "dist"), { recursive: true });
-writeFileSync(join(root, "dist/manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+writeFileSync(join(root, "dist/manifest.json"), serialized);
 
-const bytes = new TextEncoder().encode(`${JSON.stringify(manifest, null, 2)}\n`);
+const bytes = new TextEncoder().encode(serialized);
 const digest = await crypto.subtle.digest("SHA-256", bytes);
 const sha256 = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
 

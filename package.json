@@ -1,11 +1,12 @@
 {
   "name": "edgeever-github-docs",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "type": "module",
   "description": "GitHub Docs — a GitHub Primer-inspired reading theme for EdgeEver, plus a static theme generator.",
   "scripts": {
-    "validate": "node scripts/validate-theme.mjs",
+    "sync": "node scripts/sync-manifest.mjs",
+    "validate": "node scripts/check-manifest-sync.mjs && node scripts/validate-theme.mjs",
     "serve": "node scripts/serve.mjs",
     "package": "node scripts/package-theme.mjs",
     "check": "npm run validate && npm run package"

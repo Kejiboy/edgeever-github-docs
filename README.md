@@ -3,7 +3,7 @@
 一款受 GitHub Primer 启发、为**运维与学习笔记**设计的 [EdgeEver](https://github.com/tianma-if/edgeever) 主题：克制的三层底色、清晰的侧栏/编辑器分层、绿色强调色、6px 圆角与 `JetBrains Mono` 优先的代码字体。
 
 - 主题 ID：`com.kejiboy.themes.github-docs`
-- 版本：`1.0.0`
+- 版本：`1.0.1`
 - 模式：亮色 + 暗色（两套 token 完整，切换不残留默认值）
 - 类型：纯无代码主题（只有 `manifest.json`，不执行任何 JavaScript）
 - 许可证：MIT
@@ -24,18 +24,28 @@
 
 | 方式 | 市场里输入的格式 | 说明 |
 | :--- | :--- | :--- |
-| GitHub Release | `https://github.com/<you>/edgeever-github-docs` | 最省事：打 tag 后自动出 Release 资产 |
-| GitHub Raw | `https://raw.githubusercontent.com/<you>/edgeever-github-docs/main/themes/github-docs/manifest.json` | 直接指向文件，适合快速验证 |
+| GitHub 仓库 | `https://github.com/Kejiboy/edgeever-github-docs` | 需要**仓库根目录**有 `manifest.json`（本仓库已提供，由 `npm run sync` 生成） |
+| GitHub Release 文件 | `https://github.com/Kejiboy/edgeever-github-docs/releases/download/1.0.1/manifest.json` | 指向具体文件，最稳，不受上游限流影响 |
+| GitHub Raw | `https://raw.githubusercontent.com/Kejiboy/edgeever-github-docs/main/manifest.json` | 直接指向文件，适合快速验证 |
 | 静态托管 / CDN | `https://<domain>/manifest.json` | Cloudflare Pages、Netlify、对象存储均可 |
 
-EdgeEver 按**文件名**取 Release 资产，所以资产必须叫 `manifest.json`。本仓库已经配好工作流，推 tag 即可：
+> **关于 403**：输入仓库地址时，EdgeEver 服务端会调用 GitHub API 读取**仓库根目录**的 `manifest.json`。如果根目录没有这个文件，或出口 IP 被 GitHub 限流（未认证 60 次/小时），就会报 `Repository manifest request failed with HTTP 403`。上表第 1 行依赖根目录文件；第 2、3 行是直连静态文件，可绕开该问题。
 
-```bash
-git tag 1.0.0
-git push origin 1.0.0
+### 两份 manifest.json 的关系
+
+```text
+themes/github-docs/manifest.json   唯一可编辑的源文件
+manifest.json                      仓库根副本，安装“仓库地址”时读取
 ```
 
-工作流会校验 manifest、拒绝 tag 与 `version` 不一致的情况，然后把 `dist/manifest.json` 作为 Release 资产上传。
+只改源文件，然后 `npm run sync` 生成根副本。`npm run validate` 会检查两者逐字节一致，CI 也会拦截不同步的提交。
+
+打 tag 时版本号必须与 `manifest.json` 的 `version` 一致：
+
+```bash
+git tag 1.0.1
+git push origin 1.0.1
+```
 
 ### 本地自建开发环境（可选）
 
@@ -63,6 +73,7 @@ npm run serve
 themes/github-docs/manifest.json   主题清单（发布源文件）
 forge/index.html                   主题生成器（零依赖静态页）
 demo/index.html                    主题演示页（模拟三栏 + 排版示例）
+scripts/check-manifest-sync.mjs      校验根副本与源文件一致
 scripts/validate-theme.mjs         校验：token 格式、对比度、分层
 scripts/package-theme.mjs          生成 dist/manifest.json 与校验和
 scripts/serve.mjs                  本地静态服务
@@ -73,7 +84,8 @@ scripts/serve.mjs                  本地静态服务
 ## 命令
 
 ```bash
-npm run validate   # 格式 + WCAG 对比度 + 分层检查，失败退出码非 0
+npm run sync       # 源文件 -> 仓库根 manifest.json
+npm run validate   # 根副本一致性 + 格式 + WCAG 对比度 + 分层检查
 npm run package    # 产出 dist/（manifest.json、index.json 含 sha256）
 npm run serve      # 本地预览（生成器 + 演示页）
 npm run check      # validate + package
