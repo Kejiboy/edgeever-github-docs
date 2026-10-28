@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GitHub Docs · 主题演示</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .toolbar {
+    display: flex; gap: 12px; align-items: center; justify-content: center;
+    padding: 12px; border-bottom: 1px solid #8884; font-size: 13px;
+  }
+  .toolbar select { font: inherit; padding: 4px 8px; border-radius: 6px; border: 1px solid #8886; background: transparent; }
+  .toolbar .muted { opacity: .6; }
+  /* 主题变量：由 app 内的 --edgeever-theme-* 映射而来 */
+  .app {
+    --bg: #f6faf7; --surface: #ffffff; --surface-muted: #e6f3ea;
+    --text: #1e2921; --text-muted: #57705e; --border: #d0e1d5;
+    --accent: #1a7f37; --accent-fg: #ffffff;
+    --radius: 6px; --density: 1;
+    --mono: "JetBrains Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+    --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+    --line-height: 1.65; --content-width: 860px;
+    min-height: calc(100vh - 49px);
+    display: grid; grid-template-columns: 232px 290px minmax(0, 1fr);
+    background: var(--bg); color: var(--text);
+    font-family: var(--body); font-size: 14px; line-height: var(--line-height);
+  }
+  .app[data-mode="dark"] {
+    --bg: #010903; --surface: #0c1810; --surface-muted: #1f2f24;
+    --text: #e6f3ea; --text-muted: #8fa395; --border: #3b4f41;
+    --accent: #5ede83; --accent-fg: #010409;
+  }
+  .col { min-height: 100%; }
+  .col + .col { border-left: 1px solid var(--border); }
+  .tree { background: var(--surface-muted); padding: 10px 8px; }
+  .tree .label { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); padding: 4px 8px; }
+  .tree .item { padding: 3px 8px; border-radius: var(--radius); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tree .item.nest { padding-left: 20px; }
+  .tree .item.on { background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); font-weight: 600; }
+  .list { background: var(--surface); padding: 8px; }
+  .row { padding: 7px 9px; border-bottom: 1px solid var(--border); border-radius: var(--radius); }
+  .row.on { background: var(--surface-muted); }
+  .row .t { font-weight: 600; margin-bottom: 2px; }
+  .row .s { color: var(--text-muted); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row .d { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+  .editor { background: var(--surface); padding: 20px 24px 60px; overflow: auto; }
+  .sheet { max-width: var(--content-width); margin: 0 auto; }
+  .sheet h1 { font-size: 22px; margin: 0 0 6px; }
+  .meta { color: var(--text-muted); font-size: 12px; display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .tag { border: 1px solid var(--border); color: var(--text-muted); border-radius: 99px; padding: 0 8px; font-size: 11px; }
+  .btn, .btn2 {
+    font: inherit; font-size: 13px; font-weight: 600; border-radius: var(--radius);
+    padding: 4px 11px; border: 1px solid transparent; cursor: pointer;
+  }
+  .btn { background: var(--accent); color: var(--accent-fg); }
+  .btn2 { background: transparent; color: var(--text); border-color: var(--border); }
+  .actions { display: flex; gap: 8px; margin: 0 0 16px; flex-wrap: wrap; }
+  h2 { font-size: 16px; margin: 22px 0 8px; }
+  h3 { font-size: 14px; margin: 16px 0 6px; }
+  p { margin: 8px 0; }
+  ul { padding-left: 22px; }
+  li.task { list-style: none; margin-left: -20px; display: flex; gap: 8px; align-items: baseline; }
+  li.task::before { content: "☐"; color: var(--text-muted); }
+  li.task.done::before { content: "☑"; color: var(--accent); font-weight: 700; }
+  li.task.done { color: var(--text-muted); }
+  code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-muted);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 1px 4px;
+  }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; background: var(--surface-muted);
+    border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; overflow: auto;
+  }
+  pre code { border: 0; background: none; padding: 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 10px 0; }
+  th, td { border: 1px solid var(--border); padding: 5px 9px; text-align: left; }
+  th { background: var(--surface-muted); font-weight: 600; }
+  blockquote {
+    margin: 12px 0; padding: 8px 14px; border-left: 3px solid var(--accent);
+    background: var(--surface-muted); border-radius: 0 var(--radius) var(--radius) 0; color: var(--text);
+  }
+  blockquote.warn { border-left-color: #9a6700; }
+  blockquote .label { font-weight: 600; }
+  .app[data-mode="dark"] blockquote.warn { border-left-color: #d29922; }
+  .warn-text { color: #9a6700; font-weight: 600; }
+  .app[data-mode="dark"] .warn-text { color: #d29922; }
+  .danger-text { color: #cf222e; font-weight: 600; }
+  .app[data-mode="dark"] .danger-text { color: #f85149; }
+  .success-text { color: var(--accent); font-weight: 600; }
+  .link { color: var(--accent); text-decoration: underline; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+  .density-hint { color: var(--text-muted); font-size: 12px; }
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .tree, .list { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <span class="muted">主题演示</span>
+  <select id="mode" aria-label="配色模式">
+    <option value="light">亮色 · light</option>
+    <option value="dark">暗色 · dark</option>
+  </select>
+  <span class="muted" id="hint">density 1.0 · radius 6px · 860px</span>
+</div>
+
+<div class="app" id="app" data-mode="light">
+  <aside class="col tree">
+    <div class="label">学习资料</div>
+    <div class="item">云原生 / K8s</div>
+    <div class="item nest">day10 · Pod 生命周期</div>
+    <div class="item nest on">day12 · Service 与 Ingress</div>
+    <div class="item nest">day13 · ConfigMap 与 Secret</div>
+    <div class="item">Linux 基础</div>
+    <div class="item nest">权限与 ACL</div>
+    <div class="item nest">systemd 单元</div>
+    <div class="item">运维手册</div>
+    <div class="item nest">Nginx 排错</div>
+    <div class="item nest">备份与恢复</div>
+  </aside>
+
+  <section class="col list">
+    <div class="row on">
+      <div class="t">day12 · Service 与 Ingress</div>
+      <div class="s">Service 给 Pod 提供稳定入口…</div>
+      <div class="d">今天 · #k8s #网络</div>
+    </div>
+    <div class="row">
+      <div class="t">day13 · ConfigMap 与 Secret</div>
+      <div class="s">配置与密钥的注入方式…</div>
+      <div class="d">昨天 · #k8s</div>
+    </div>
+    <div class="row">
+      <div class="t">Nginx 反向代理排错清单</div>
+      <div class="s">502/504 的定位顺序…</div>
+      <div class="d">10-25 · #nginx</div>
+    </div>
+    <div class="row">
+      <div class="t">备份与恢复演练</div>
+      <div class="s">冷备、热备与恢复验证…</div>
+      <div class="d">10-22 · #备份</div>
+    </div>
+  </section>
+
+  <main class="col editor">
+    <div class="sheet">
+      <h1>day12 · Service 与 Ingress</h1>
+      <div class="meta">
+        <span>10 月 28 日</span>
+        <span>·</span>
+        <span class="tag">k8s</span><span class="tag">网络</span><span class="tag">day12</span>
+      </div>
+      <div class="actions">
+        <button class="btn" type="button">发布</button>
+        <button class="btn2" type="button">导出</button>
+        <button class="btn2" type="button">分享</button>
+      </div>
+
+      <p>Service 给 Pod 提供稳定入口，<code>ClusterIP</code>、<code>NodePort</code>、<code>LoadBalancer</code> 三种类型按暴露范围选择。Ingress 在七层做路由，通常配合 Ingress Controller 使用。</p>
+
+      <blockquote><span class="label">踩坑</span>：Ingress 的 <code>pathType</code> 写成 <code>Prefix</code> 才能匹配 <code>/api/v1</code> 这类子路径；<code>Exact</code> 只认全等。</blockquote>
+
+      <h2>三种 Service 类型</h2>
+      <table>
+        <thead><tr><th>类型</th><th>暴露范围</th><th>典型场景</th></tr></thead>
+        <tbody>
+          <tr><td>ClusterIP</td><td>集群内部</td><td>内部调用、数据库</td></tr>
+          <tr><td>NodePort</td><td>每个节点端口</td><td>本地调试</td></tr>
+          <tr><td>LoadBalancer</td><td>云负载均衡</td><td>对外入口</td></tr>
+        </tbody>
+      </table>
+
+      <h2>今日待办</h2>
+      <ul>
+        <li class="task done">看完 Service 章节</li>
+        <li class="task done">手写一遍 ClusterIP YAML</li>
+        <li class="task">完成 Ingress 实验</li>
+        <li class="task">整理排错清单到运维手册</li>
+      </ul>
+
+      <h2>命令速查</h2>
+      <pre><code>kubectl get svc -n default
+kubectl describe ingress demo
+kubectl get endpoints demo</code></pre>
+
+      <blockquote class="warn"><span class="label">提醒</span>：<code>kubectl get svc</code> 看到 <code>ENDPOINTS</code> 为空，通常是 selector 和 Pod 标签对不上。</blockquote>
+
+      <p>删除前先确认引用：<span class="danger-text">删除 Ingress 会导致外部访问立即中断</span>；重建后 <span class="success-text">TLS 证书需要重新挂载</span>。</p>
+
+      <hr>
+      <p class="density-hint">这一页用于检查主题的文字层级、表格、代码块、引用块、任务列表与颜色语义；真实编辑器里还会叠加代码高亮配色（由编辑器主题决定，不归本主题管）。</p>
+    </div>
+  </main>
+</div>
+
+<script>
+(() => {
+  const app = document.getElementById("app");
+  const select = document.getElementById("mode");
+  const hint = document.getElementById("hint");
+
+  const manifest = {
+    density: "1.0",
+    radius: "6px",
+    width: "860px",
+  };
+  hint.textContent = `density ${manifest.density} · radius ${manifest.radius} · ${manifest.width}`;
+
+  const stored = localStorage.getItem("github-docs-demo-mode");
+  if (stored === "dark") select.value = "dark";
+  app.dataset.mode = select.value;
+
+  select.addEventListener("change", () => {
+    app.dataset.mode = select.value;
+    localStorage.setItem("github-docs-demo-mode", select.value);
+  });
+})();
+</script>
+</body>
+</html>

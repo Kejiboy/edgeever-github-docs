@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Theme Forge · EdgeEver</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #f6f8fa;
+    --surface: #ffffff;
+    --surface-muted: #eef2f6;
+    --text: #1f2328;
+    --text-muted: #59636e;
+    --border: #d1d9e0;
+    --accent: #1a7f37;
+    --accent-fg: #ffffff;
+    --danger: #cf222e;
+    --ok: #1a7f37;
+    --radius: 6px;
+    --mono: "JetBrains Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 24px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .lead { color: var(--text-muted); margin: 0 0 20px; }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 860px) { .layout { grid-template-columns: minmax(0, 1fr); } }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .panel + .panel { margin-top: 16px; }
+  .panel h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin: 0 0 12px; font-weight: 600; }
+  .field { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 8px 12px; align-items: center; margin-bottom: 10px; }
+  .field label { color: var(--text-muted); font-size: 13px; }
+  .field .row { display: flex; gap: 8px; align-items: center; }
+  input[type="text"], input[type="color"], select {
+    font: inherit;
+    color: var(--text);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px 8px;
+    width: 100%;
+    min-width: 0;
+  }
+  input[type="color"] { padding: 2px; height: 32px; width: 42px; flex: none; cursor: pointer; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .hint { color: var(--text-muted); font-size: 12px; }
+  .checks { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .checks li { display: flex; justify-content: space-between; gap: 12px; font-size: 13px; }
+  .checks .val { font-family: var(--mono); font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+  .badge { font-size: 11px; font-weight: 600; padding: 0 6px; border-radius: 99px; border: 1px solid currentColor; }
+  .pass { color: var(--ok); }
+  .fail { color: var(--danger); }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    border-radius: var(--radius);
+    padding: 5px 12px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+  }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: transparent; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+    overflow: auto;
+    max-height: 380px;
+    white-space: pre;
+  }
+  /* ---- 预览 ---- */
+  .preview {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: grid;
+    grid-template-columns: 26% minmax(0, 1fr);
+    min-height: 320px;
+  }
+  .preview .side { background: var(--surface-muted); border-right: 1px solid var(--border); padding: 10px 8px; }
+  .preview .side .h { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin-bottom: 6px; }
+  .preview .item { padding: 3px 7px; border-radius: var(--radius); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .preview .item.on { background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); font-weight: 600; }
+  .preview .main { background: var(--surface); padding: 14px 16px; }
+  .preview h3 { font-size: 17px; margin: 0 0 4px; font-weight: 600; letter-spacing: -0.01em; }
+  .preview p { margin: 5px 0; }
+  .preview .muted { color: var(--text-muted); }
+  .preview code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--surface-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1px 4px;
+  }
+  .preview .btns { display: flex; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
+  .preview .btn { background: var(--accent); color: var(--accent-fg); border-radius: var(--radius); padding: 2px 10px; font-weight: 600; font-size: 12px; }
+  .preview .btn2 { border: 1px solid var(--border); border-radius: var(--radius); padding: 2px 10px; font-size: 12px; }
+  .preview .tag { display: inline-block; border: 1px solid var(--border); color: var(--text-muted); border-radius: 99px; padding: 0 7px; font-size: 11px; margin-right: 4px; }
+  .preview .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--surface-muted);
+    padding: 6px 10px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin: 8px 0;
+  }
+  .preview table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .preview th, .preview td { border: 1px solid var(--border); padding: 3px 7px; text-align: left; }
+  .preview th { background: var(--surface-muted); font-weight: 600; }
+  .swatches { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+  .swatches span { font-size: 11px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 4px; }
+  .swatches i { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--border); display: inline-block; }
+  .error { color: var(--danger); font-size: 13px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Theme Forge</h1>
+<p class="lead">为 EdgeEver 生成符合主题 API 的 <code>manifest.json</code>：18 个 token 自动推导，对比度实时校验。</p>
+
+<div class="layout">
+  <div>
+    <div class="panel">
+      <h2>输入</h2>
+      <div class="field">
+        <label for="brand">品牌主色</label>
+        <div class="row">
+          <input type="color" id="brandColor" value="#1a7f37" aria-label="品牌主色">
+          <input type="text" id="brand" value="#1a7f37" spellcheck="false">
+        </div>
+      </div>
+      <div class="field">
+        <label for="density">密度</label>
+        <div class="row">
+          <input type="range" id="density" min="0.5" max="1.5" step="0.01" value="1">
+          <output id="densityOut" class="hint" style="width:3rem;text-align:right">1.00</output>
+        </div>
+      </div>
+      <div class="field">
+        <label for="radius">圆角</label>
+        <select id="radius">
+          <option value="0px">0px · 硬朗</option>
+          <option value="4px">4px</option>
+          <option value="6px" selected>6px · GitHub</option>
+          <option value="8px">8px</option>
+          <option value="0.625rem">10px</option>
+          <option value="0.75rem">12px</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="width">正文宽度</label>
+        <select id="width">
+          <option value="760px">760px · 窄</option>
+          <option value="860px" selected>860px · 默认</option>
+          <option value="920px">920px · 宽</option>
+          <option value="100%">100% · 全宽</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fontBody">正文字体</label>
+        <select id="fontBody">
+          <option value="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Inter, ui-sans-serif, system-ui, sans-serif" selected>系统字体栈</option>
+          <option value="Inter, ui-sans-serif, system-ui, sans-serif">Inter</option>
+          <option value="&quot;Noto Sans SC&quot;, &quot;PingFang SC&quot;, &quot;Microsoft YaHei&quot;, sans-serif">中文优先</option>
+          <option value="Georgia, &quot;Songti SC&quot;, serif">衬线</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fontMono">等宽字体</label>
+        <select id="fontMono">
+          <option value="&quot;JetBrains Mono&quot;, SFMono-Regular, ui-monospace, Menlo, Consolas, monospace" selected>JetBrains Mono 优先</option>
+          <option value="ui-monospace, SFMono-Regular, Menlo, monospace">系统等宽</option>
+          <option value="&quot;Fira Code&quot;, &quot;JetBrains Mono&quot;, monospace">Fira Code</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="fontSize">字号</label>
+        <select id="fontSize">
+          <option value="100%" selected>100%</option>
+          <option value="95%">95%</option>
+          <option value="105%">105%</option>
+          <option value="110%">110%</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="lineHeight">行高</label>
+        <select id="lineHeight">
+          <option value="1.55">1.55</option>
+          <option value="1.65" selected>1.65</option>
+          <option value="1.75">1.75</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="themeId">主题 ID</label>
+        <input type="text" id="themeId" value="com.kejiboy.themes.github-docs" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="themeName">主题名</label>
+        <input type="text" id="themeName" value="GitHub Docs" spellcheck="false">
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>校验</h2>
+      <ul class="checks" id="checks"></ul>
+      <p class="error" id="error" hidden></p>
+    </div>
+
+    <div class="panel">
+      <h2>导出</h2>
+      <div class="actions">
+        <button class="primary" id="copy" type="button">复制 manifest.json</button>
+        <button id="download" type="button">下载文件</button>
+        <button id="reset" type="button">重置为 GitHub Docs</button>
+      </div>
+      <p class="hint" id="copyState" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <h2>预览</h2>
+      <div class="preview" id="preview">
+        <div class="side">
+          <div class="h">运维笔记</div>
+          <div class="item">云原生 / K8s</div>
+          <div class="item on">day12 · Service 与 Ingress</div>
+          <div class="item">Linux 权限与 systemd</div>
+          <div class="item">Nginx 反向代理排错</div>
+          <div class="item">数据库备份策略</div>
+        </div>
+        <div class="main">
+          <h3>day12 · Service 与 Ingress</h3>
+          <p class="muted">标签：<span class="tag">k8s</span><span class="tag">网络</span></p>
+          <div class="btns"><span class="btn">发布</span><span class="btn2">导出</span><span class="btn2">分享</span></div>
+          <p>Service 给 Pod 提供稳定入口，<code>ClusterIP</code>、<code>NodePort</code>、<code>LoadBalancer</code> 三种类型按暴露范围选择。</p>
+          <div class="callout">踩坑：Ingress 的 <code>pathType</code> 写成 <code>Prefix</code> 才能匹配子路径。</div>
+          <table><tr><th>对象</th><th>作用</th></tr><tr><td>Service</td><td>四层转发</td></tr><tr><td>Ingress</td><td>七层路由</td></tr></table>
+        </div>
+      </div>
+      <div class="swatches" id="swatches"></div>
+      <div class="actions">
+        <button id="mode" type="button">切换暗色预览</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>manifest.json</h2>
+      <pre id="output"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const DEFAULTS = {
+    brand: "#1a7f37",
+    density: 1,
+    radius: "6px",
+    width: "860px",
+    fontBody: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif',
+    fontMono: '"JetBrains Mono", SFMono-Regular, ui-monospace, Menlo, Consolas, monospace',
+    fontSize: "100%",
+    lineHeight: "1.65",
+    themeId: "com.kejiboy.themes.github-docs",
+    themeName: "GitHub Docs",
+  };
+
+  const HEX = /^#[0-9a-f]{6}$/i;
+
+  /* ---------- 颜色工具 ---------- */
+  const parseHex = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const toHex = (rgb) =>
+    "#" + rgb.map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join("");
+
+  const rgbToHsl = (rgb) => {
+    const [r, g, b] = rgb.map((v) => v / 255);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    if (max === min) return [0, 0, l];
+    const d = max - min;
+    const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    let h;
+    if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+    else if (max === g) h = ((b - r) / d + 2) / 6;
+    else h = ((r - g) / d + 4) / 6;
+    return [h, s, l];
+  };
+
+  const hslToHex = (h, s, l) => {
+    h = ((h % 1) + 1) % 1;
+    s = Math.max(0, Math.min(1, s));
+    l = Math.max(0, Math.min(1, l));
+    if (s === 0) {
+      const v = Math.round(l * 255);
+      return toHex([v, v, v]);
+    }
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    const f = (t) => {
+      t = ((t % 1) + 1) % 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    return toHex([f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255]);
+  };
+
+  const relativeLuminance = (hex) =>
+    parseHex(hex)
+      .map((v) => v / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)))
+      .reduce((acc, c, i) => acc + c * [0.2126, 0.7152, 0.0722][i], 0);
+
+  const contrast = (a, b) => {
+    const [x, y] = [relativeLuminance(a), relativeLuminance(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+  };
+
+  const mix = (a, b, weight) => toHex(parseHex(a).map((v, i) => v * (1 - weight) + parseHex(b)[i] * weight));
+
+  const contrastText = (bg) => (contrast(bg, "#ffffff") >= contrast(bg, "#010409") ? "#ffffff" : "#010409");
+
+  /* ---------- 主题推导 ---------- */
+  // 推导以「中性灰底 + 品牌色相」为骨架，而不是无条件给每个面都染色：
+  // 强色相在浅底上会带出明显的彩色雾，在深底上会让侧栏发绿。
+  const colorize = (grayHex, hue, strength) => {
+    const [gh, gs, gl] = rgbToHsl(parseHex(grayHex));
+    return hslToHex(hue, gs + Math.min(strength, 0.04), gl);
+  };
+
+  const derive = (brand) => {
+    const [h, s, l] = rgbToHsl(parseHex(brand));
+    const sat = Math.min(s, 0.86);
+    // 亮色：GitHub 的 #f6f8fa / #e6edf3 / #1f2328 阶梯，带极轻的品牌色相
+    const lightBg = colorize("#f6f8fa", h, s > 0.06 ? 0.012 : 0);
+    const lightSurface = hslToHex(h, 0, 1);
+    const lightMuted = colorize("#e6edf3", h, s > 0.06 ? 0.014 : 0);
+    const lightText = colorize("#1f2328", h, s > 0.06 ? 0.03 : 0);
+    const lightTextMuted = colorize("#59636e", h, s > 0.06 ? 0.025 : 0);
+    const lightBorder = colorize("#d1d9e0", h, s > 0.06 ? 0.02 : 0);
+
+    // 暗色：GitHub 的 #010409 / #0d1117 / #21262d 阶梯，侧栏刻意抬高一层
+    const darkBg = colorize("#010409", h, s > 0.06 ? 0.04 : 0);
+    const darkSurface = colorize("#0d1117", h, s > 0.06 ? 0.04 : 0);
+    const darkMuted = colorize("#21262d", h, s > 0.06 ? 0.04 : 0);
+    const darkText = colorize("#e6edf3", h, s > 0.06 ? 0.022 : 0);
+    const darkTextMuted = colorize("#9198a1", h, s > 0.06 ? 0.02 : 0);
+    const darkBorder = colorize("#3d444d", h, s > 0.06 ? 0.025 : 0);
+
+    // accent：亮色压深到白字可读；暗色提亮到深底上清晰
+    const lightAccent = contrast(brand, "#ffffff") >= 4.5 ? brand : hslToHex(h, sat, Math.min(l, 0.3));
+    const darkAccent = contrast(brand, "#010409") >= 4.5 && contrast(brand, "#0d1117") >= 4.5
+      ? brand
+      : hslToHex(h, Math.min(Math.max(sat, 0.55), 0.85), Math.max(l, 0.62));
+
+    return {
+      light: {
+        "color.background": lightBg,
+        "color.surface": lightSurface,
+        "color.surfaceMuted": lightMuted,
+        "color.text": lightText,
+        "color.textMuted": lightTextMuted,
+        "color.border": lightBorder,
+        "color.accent": lightAccent,
+        "color.accentForeground": contrastText(lightAccent),
+        "color.success": lightAccent,
+        "color.warning": "#9a6700",
+        "color.danger": "#cf222e",
+      },
+      dark: {
+        "color.background": darkBg,
+        "color.surface": darkSurface,
+        "color.surfaceMuted": darkMuted,
+        "color.text": darkText,
+        "color.textMuted": darkTextMuted,
+        "color.border": darkBorder,
+        "color.accent": darkAccent,
+        "color.accentForeground": contrastText(darkAccent),
+        "color.success": darkAccent,
+        "color.warning": "#d29922",
+        "color.danger": "#f85149",
+      },
+    };
+  };
+
+  /* ---------- 状态 ---------- */
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    brandColor: $("brandColor"), brand: $("brand"),
+    density: $("density"), densityOut: $("densityOut"),
+    radius: $("radius"), width: $("width"),
+    fontBody: $("fontBody"), fontMono: $("fontMono"),
+    fontSize: $("fontSize"), lineHeight: $("lineHeight"),
+    themeId: $("themeId"), themeName: $("themeName"),
+    checks: $("checks"), error: $("error"),
+    preview: $("preview"), swatches: $("swatches"),
+    output: $("output"), copyState: $("copyState"),
+    copy: $("copy"), download: $("download"), reset: $("reset"), mode: $("mode"),
+  };
+
+  let darkPreview = false;
+
+  const readState = () => ({
+    brand: el.brand.value.trim(),
+    density: Number(el.density.value),
+    radius: el.radius.value,
+    width: el.width.value,
+    fontBody: el.fontBody.value,
+    fontMono: el.fontMono.value,
+    fontSize: el.fontSize.value,
+    lineHeight: el.lineHeight.value,
+    themeId: el.themeId.value.trim(),
+    themeName: el.themeName.value.trim(),
+  });
+
+  const buildManifest = (state) => {
+    const tokens = derive(state.brand);
+    const common = {
+      "font.body": state.fontBody,
+      "font.mono": state.fontMono,
+      "font.size": state.fontSize,
+      "lineHeight.body": state.lineHeight,
+      "radius.medium": state.radius,
+      "density.scale": state.density.toFixed(2),
+      "editor.contentWidth": state.width,
+    };
+    return {
+      type: "theme",
+      id: state.themeId,
+      name: state.themeName || "Untitled Theme",
+      version: "1.0.0",
+      themeApiVersion: "1",
+      modes: ["light", "dark"],
+      light: { ...tokens.light, ...common },
+      dark: { ...tokens.dark, ...common },
+    };
+  };
+
+  const CHECKS = (manifest) => {
+    const idOk = /^[a-z0-9]+(?:[._-][a-z0-9]+)+$/.test(manifest.id);
+    const light = manifest.light, dark = manifest.dark;
+    const items = [];
+    items.push({ label: "主题 ID 格式", ok: idOk });
+    items.push({
+      label: "亮色正文对比度 ≥ 7:1",
+      ok: contrast(light["color.text"], light["color.surface"]) >= 7,
+      value: contrast(light["color.text"], light["color.surface"]).toFixed(2),
+    });
+    items.push({
+      label: "亮色弱文字对比度 ≥ 4.5:1",
+      ok: contrast(light["color.textMuted"], light["color.surfaceMuted"]) >= 4.5,
+      value: contrast(light["color.textMuted"], light["color.surfaceMuted"]).toFixed(2),
+    });
+    items.push({
+      label: "亮色按钮文字对比度 ≥ 4.5:1",
+      ok: contrast(light["color.accentForeground"], light["color.accent"]) >= 4.5,
+      value: contrast(light["color.accentForeground"], light["color.accent"]).toFixed(2),
+    });
+    items.push({
+      label: "暗色正文对比度 ≥ 7:1",
+      ok: contrast(dark["color.text"], dark["color.surface"]) >= 7,
+      value: contrast(dark["color.text"], dark["color.surface"]).toFixed(2),
+    });
+    items.push({
+      label: "暗色弱文字对比度 ≥ 4.5:1",
+      ok: contrast(dark["color.textMuted"], dark["color.surfaceMuted"]) >= 4.5,
+      value: contrast(dark["color.textMuted"], dark["color.surfaceMuted"]).toFixed(2),
+    });
+    items.push({
+      label: "暗色按钮文字对比度 ≥ 4.5:1",
+      ok: contrast(dark["color.accentForeground"], dark["color.accent"]) >= 4.5,
+      value: contrast(dark["color.accentForeground"], dark["color.accent"]).toFixed(2),
+    });
+    items.push({ label: "侧栏与编辑器可区分（≥1.05:1）", ok: contrast(light["color.surfaceMuted"], light["color.surface"]) >= 1.05, value: contrast(light["color.surfaceMuted"], light["color.surface"]).toFixed(2) });
+    items.push({ label: "暗色侧栏与编辑器可区分（≥1.05:1）", ok: contrast(dark["color.surface"], dark["color.surfaceMuted"]) >= 1.05, value: contrast(dark["color.surface"], dark["color.surfaceMuted"]).toFixed(2) });
+    items.push({ label: "density.scale 在 0.5–1.99", ok: Number(manifest.light["density.scale"]) >= 0.5 && Number(manifest.light["density.scale"]) <= 1.99 });
+    return items;
+  };
+
+  const render = () => {
+    const state = readState();
+    if (!HEX.test(state.brand)) {
+      el.error.hidden = false;
+      el.error.textContent = "品牌主色必须是 #RRGGBB 格式。";
+      el.output.textContent = "";
+      return;
+    }
+    el.error.hidden = true;
+
+    const manifest = buildManifest(state);
+    const checks = CHECKS(manifest);
+    const allPass = checks.every((c) => c.ok);
+    el.copy.disabled = !allPass;
+    el.download.disabled = !allPass;
+
+    el.checks.innerHTML = checks
+      .map((c) => `<li><span>${c.label}</span><span class="val">${c.value ?? ""} <span class="badge ${c.ok ? "pass" : "fail"}">${c.ok ? "通过" : "不通过"}</span></span></li>`)
+      .join("");
+
+    el.output.textContent = JSON.stringify(manifest, null, 2);
+
+    // 预览变量
+    const tokens = darkPreview ? manifest.dark : manifest.light;
+    const p = el.preview.style;
+    p.setProperty("--bg", tokens["color.background"]);
+    p.setProperty("--surface", tokens["color.surface"]);
+    p.setProperty("--surface-muted", tokens["color.surfaceMuted"]);
+    p.setProperty("--text", tokens["color.text"]);
+    p.setProperty("--text-muted", tokens["color.textMuted"]);
+    p.setProperty("--border", tokens["color.border"]);
+    p.setProperty("--accent", tokens["color.accent"]);
+    p.setProperty("--accent-fg", tokens["color.accentForeground"]);
+    p.setProperty("--radius", tokens["radius.medium"]);
+    el.preview.style.fontFamily = tokens["font.body"];
+    el.preview.style.lineHeight = tokens["lineHeight.body"];
+
+    const swatchKeys = ["color.background", "color.surface", "color.surfaceMuted", "color.border", "color.accent"];
+    el.swatches.innerHTML = swatchKeys
+      .map((k) => `<span><i style="background:${tokens[k]}"></i>${k.replace("color.", "")}</span>`)
+      .join("");
+  };
+
+  /* ---------- 事件 ---------- */
+  el.brand.addEventListener("input", () => {
+    if (HEX.test(el.brand.value.trim())) el.brandColor.value = el.brand.value.trim();
+    render();
+  });
+  el.brandColor.addEventListener("input", () => {
+    el.brand.value = el.brandColor.value;
+    render();
+  });
+  el.density.addEventListener("input", () => {
+    el.densityOut.textContent = Number(el.density.value).toFixed(2);
+    render();
+  });
+  ["radius", "width", "fontBody", "fontMono", "fontSize", "lineHeight", "themeId", "themeName"].forEach((id) => {
+    el[id].addEventListener("input", render);
+    el[id].addEventListener("change", render);
+  });
+
+  el.mode.addEventListener("click", () => {
+    darkPreview = !darkPreview;
+    el.mode.textContent = darkPreview ? "切换亮色预览" : "切换暗色预览";
+    render();
+  });
+
+  el.copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(el.output.textContent);
+      el.copyState.textContent = "已复制到剪贴板。";
+    } catch {
+      el.copyState.textContent = "复制失败，请手动选择下方文本复制。";
+    }
+    setTimeout(() => { el.copyState.textContent = ""; }, 2500);
+  });
+
+  el.download.addEventListener("click", () => {
+    const blob = new Blob([el.output.textContent], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "manifest.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  el.reset.addEventListener("click", () => {
+    el.brand.value = DEFAULTS.brand;
+    el.brandColor.value = DEFAULTS.brand;
+    el.density.value = String(DEFAULTS.density);
+    el.densityOut.textContent = DEFAULTS.density.toFixed(2);
+    el.radius.value = DEFAULTS.radius;
+    el.width.value = DEFAULTS.width;
+    el.fontBody.value = DEFAULTS.fontBody;
+    el.fontMono.value = DEFAULTS.fontMono;
+    el.fontSize.value = DEFAULTS.fontSize;
+    el.lineHeight.value = DEFAULTS.lineHeight;
+    render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
